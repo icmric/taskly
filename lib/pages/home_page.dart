@@ -38,7 +38,7 @@ class _HomePageState extends State<HomePage> {
     return FutureBuilder(
       future: Hive.openBox('tasks'),
       builder: (BuildContext _context, AsyncSnapshot _snapshot) {
-        if (_snapshot.connectionState == ConnectionState.done) {
+        if (_snapshot.hasData) {
           _box = _snapshot.data;
           return _tasksList();
         } else {
@@ -67,9 +67,26 @@ class _HomePageState extends State<HomePage> {
             task.timeStamp.toString(),
           ),
           trailing: Icon(
-            task.done ? Icons.check_box_outlined : Icons.check_box_outline_blank,
+            task.done
+                ? Icons.check_box_outlined
+                : Icons.check_box_outline_blank,
             color: Colors.red,
           ),
+          onTap: () {
+            setState(() {
+            task.done = !task.done;
+            _box!.putAt(
+              _index,
+              task.toMap(),
+            );
+            });
+          },
+          onLongPress: () {
+            _box!.deleteAt(_index);
+            setState(() {
+              
+            });
+          },
         );
       },
     );
@@ -93,7 +110,10 @@ class _HomePageState extends State<HomePage> {
           content: TextField(
             onSubmitted: (_) {
               if (_newTaskContent != null) {
-                var _task = Task(content: _newTaskContent!, timeStamp: DateTime.now(), done: false);
+                var _task = Task(
+                    content: _newTaskContent!,
+                    timeStamp: DateTime.now(),
+                    done: false);
                 _box!.add(_task.toMap());
                 setState(() {
                   _newTaskContent = null;
